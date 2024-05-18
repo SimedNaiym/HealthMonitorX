@@ -8,9 +8,9 @@ import java.util.Date;
 
 @WebService(endpointInterface = "com.kafka.mysensor.Sensor")
 @Service
-public class HeartRateSensor implements Sensor {
+public class TemperatureSensor implements Sensor {
     public final String topicName;
-    public double heartRateValue;
+    public double temperatureValue;
     public final String sensorType;
     public final String unit;
     public final String alertTopic;
@@ -18,11 +18,11 @@ public class HeartRateSensor implements Sensor {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
 
-    public HeartRateSensor(KafkaTemplate<String, String> kafkaTemplate) {
-        this.topicName = "heartrate";
-        this.sensorType = "HEARTRATE";
-        this.alertTopic = "heartrateAlert";
-        this.unit = "bpm";
+    public TemperatureSensor(KafkaTemplate<String, String> kafkaTemplate) {
+        this.topicName = "temperature";
+        this.sensorType = "TEMPERATURE";
+        this.alertTopic = "temperatureAlert";
+        this.unit = "°C";
         this.kafkaTemplate = kafkaTemplate;
     }
 
@@ -38,19 +38,20 @@ public class HeartRateSensor implements Sensor {
 
     @Override
     public String toString() {
-        return "{Date: " + this.date + ", Sensor type: " + this.sensorType + ", Value: " + String.format("%.2f", this.heartRateValue) + ", Unit: " + this.unit + "}";
+        return "{Date: " + this.date + ", Sensor type: " + this.sensorType + ", Value: " + String.format("%.2f", this.temperatureValue) + " " + this.unit + "}";
     }
 
     public void generateData() {
-        this.heartRateValue = 60 + Math.random() * 40; // 60 -> 100 bpm
+        this.temperatureValue = 30 + Math.random() * 9.7; // Generates temperature values between 30 and 39.7°C
         this.date = new Date();
     }
+
 
     public void captureData() {
         // Generating the data
         generateData();
         kafkaTemplate.send(topicName, toString());
-        kafkaTemplate.send(alertTopic, String.format("%.2f", this.heartRateValue));
+        kafkaTemplate.send(alertTopic, String.format("%.2f", this.temperatureValue));
         synchronized (Sensor.SHARED_TOPIC) {
             kafkaTemplate.send(Sensor.SHARED_TOPIC, toString());
         }

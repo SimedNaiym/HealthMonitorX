@@ -8,9 +8,9 @@ import java.util.Date;
 
 @WebService(endpointInterface = "com.kafka.mysensor.Sensor")
 @Service
-public class TemperatureSensor implements Sensor {
+public class OxygenSaturationSensor implements Sensor {
     public final String topicName;
-    public double temperatureValue;
+    public double oxygenSaturationValue;
     public final String sensorType;
     public final String unit;
     public final String alertTopic;
@@ -18,11 +18,11 @@ public class TemperatureSensor implements Sensor {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
 
-    public TemperatureSensor(KafkaTemplate<String, String> kafkaTemplate) {
-        this.topicName = "temperature";
-        this.sensorType = "TEMPERATURE";
-        this.alertTopic = "temperatureAlert";
-        this.unit = "°C";
+    public OxygenSaturationSensor(KafkaTemplate<String, String> kafkaTemplate) {
+        this.topicName = "oxygensaturation";
+        this.sensorType = "OXYGEN_SATURATION";
+        this.alertTopic = "oxygensaturationAlert";
+        this.unit = "%";
         this.kafkaTemplate = kafkaTemplate;
     }
 
@@ -38,11 +38,11 @@ public class TemperatureSensor implements Sensor {
 
     @Override
     public String toString() {
-        return "{Date: " + this.date + ", Sensor type: " + this.sensorType + ", Value: " + String.format("%.2f", this.temperatureValue) + " " + this.unit + "}";
+        return "{Date: " + this.date + ", Sensor type: " + this.sensorType + ", Value: " + String.format("%.2f", this.oxygenSaturationValue) + " " + this.unit + "}";
     }
 
     public void generateData() {
-        this.temperatureValue = 40 + Math.random() * 15; // 20 -> 35°C
+        this.oxygenSaturationValue = 80 + Math.random() * 30; // 90% -> 110%
         this.date = new Date();
     }
 
@@ -50,7 +50,7 @@ public class TemperatureSensor implements Sensor {
         // Generating the data
         generateData();
         kafkaTemplate.send(topicName, toString());
-        kafkaTemplate.send(alertTopic, String.format("%.2f", this.temperatureValue));
+        kafkaTemplate.send(alertTopic, String.format("%.2f", this.oxygenSaturationValue));
         synchronized (Sensor.SHARED_TOPIC) {
             kafkaTemplate.send(Sensor.SHARED_TOPIC, toString());
         }
